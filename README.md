@@ -2,6 +2,8 @@
 
 A full-stack platform showcasing Parameter-Efficient Fine-Tuning (PEFT) with [Anushka69/llama3-finetuned-cv-adapter](https://huggingface.co/Anushka69/llama3-finetuned-cv-adapter) — a LoRA adapter fine-tuned on Meta-Llama-3-8B-Instruct for CV/Resume domain tasks. Built with FastAPI + Next.js 14.
 
+![Dashboard](screenshots/dashboard_hero.png)
+
 ---
 
 ## Quick Start (Run in 2 Minutes)
@@ -55,89 +57,111 @@ Go to **http://localhost:3000** in your browser.
 
 ---
 
-## Pages & Features
+## Screenshots & Pages
+
+### Navigation Bar
+
+![Navbar](screenshots/navbar.png)
+
+The glassmorphism navigation bar is present on every page. It includes:
+- **PEFT Platform** logo with lightning bolt icon
+- **Page links** (Dashboard, Training, Playground, Architecture) with an animated active indicator that slides between tabs
+- **Connection badges** on the right showing real-time service health:
+  - **HF** (HuggingFace) — green when model metadata is live
+  - **W&B** (Weights & Biases) — green when training metrics are connected
+  - **Inference** — green when the Groq/HF inference API is responding
+- **Theme toggle** (sun/moon icon) for switching between dark and light mode
+
+---
 
 ### 1. Dashboard (Home Page)
 
-The main landing page with a hero section and key statistics about the fine-tuned model.
+![Dashboard](screenshots/dashboard_hero.png)
 
-**What you see:**
-- Hero banner with model description and quick-start links
-- 6 stats cards showing parameter efficiency metrics:
-  - Total Parameters (8B), Trainable Parameters (6.8M), Trainable % (0.085%)
-  - Base Model Size (16GB), Quantized Size (4GB), Adapter Size (26MB)
-- QLoRA explanation cards breaking down the technique
-- Navigation cards to other pages (Metrics, Playground, Architecture)
-- Model configuration details with all 7 target modules listed
+The main landing page provides a complete overview of the fine-tuned model:
 
-**Data source:** Live from HuggingFace API (with HF_TOKEN) or demo data.
+- **Hero Section** — "PEFT Showcase" header with a gradient accent, description of the LoRA adapter for CV/resume domain, and two key highlights: 99.9% parameter reduction and 75% memory saved
+- **6 Stats Cards** in a 3x2 grid, each with an icon and animated counter:
+  - *Trainable Parameters*: 0.085% (down 99.9% vs full fine-tuning)
+  - *GPU Memory Saved*: ~75% (6GB vs 24GB)
+  - *LoRA Rank*: 16 (effective scaling 2.0x)
+  - *Total Parameters*: 8.0B
+  - *Quantization*: 4-bit NF4 with BFloat16 compute
+  - *Training Time*: ~2.4h on a single consumer GPU
+- **"What is QLoRA?"** explanation card describing how LoRA adapters inject small trainable matrices into 7 transformer modules while keeping the base model frozen
+- **Target Modules** card listing all 7 modules with Attention/Feed-Forward labels (q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj)
+- **Navigation cards** linking to Training Metrics, Inference Playground, and Architecture pages
+
+![Dashboard Full](screenshots/dashboard.png)
 
 ---
 
 ### 2. Training Metrics
 
-Visualizes the complete training run with interactive charts.
+![Training Metrics](screenshots/training_metrics_hero.png)
 
-**What you see:**
-- Training progress bar showing steps completed
-- 3 stats cards: Best Eval Loss (0.286), Final Train Loss (0.244), Total Steps (500)
-- **Training Loss Chart** — Dual-line area chart showing train loss and eval loss converging over 500 steps
-- **Learning Rate Schedule** — Shows the cosine decay schedule from 2e-4 to 5e-5
-- **Gradient Norm Chart** — Tracks gradient stability throughout training
-- Training configuration panel (learning rate, batch size, optimizer, warmup)
-- Key insights section with convergence analysis
+Visualizes the complete training run with interactive Recharts:
 
-**Data source:** Weights & Biases API (with WANDB_API_KEY) or generated demo metrics.
+- **Training Progress Bar** — Animated blue-to-indigo gradient bar showing 50/500 steps (10%), 0.5 epochs completed
+- **3 Summary Stats Cards**:
+  - *Best Eval Loss*: 0.2860 (with downward trend icon)
+  - *Final Train Loss*: 0.2436
+  - *Total Steps*: 50 (0.5 epochs)
+- **Training Loss Chart** — Dual-line area chart with gradient fills showing both train loss (blue) and eval loss (red) converging smoothly from 3.0 down to ~0.25 over 490 steps
+- **Learning Rate Schedule** — Green line chart showing the cosine decay: flat at 2e-4 until step 340, then stepping down to 1e-4 and 5e-5
+- **Gradient Norm Chart** — Yellow line showing gradient norms decreasing steadily from 1.2 to 0.17, confirming stable training with no gradient explosion
+- **Training Configuration** panel with learning rate (2e-4 to 1e-5), warmup steps (50), batch size (4 with gradient accumulation 4), optimizer (AdamW), and convergence status (Stable, green checkmark)
+- **Key Insights** — 4 bullet points on convergence behavior, learning rate scheduling, gradient stability, and training duration
+
+![Training Metrics Full](screenshots/training_metrics.png)
 
 ---
 
 ### 3. Inference Playground
 
-Side-by-side comparison of base model vs fine-tuned model responses.
+![Inference Playground](screenshots/playground_hero.png)
 
-**What you see:**
-- Prompt input textarea with character counter (500 char limit)
-- Category tabs: Resume, Career, Skills — each with quick-select example prompts
-- Temperature slider (0.1 - 1.0) and Max Tokens slider (50 - 512)
-- Two response panels side-by-side:
-  - **Left:** Base Model (Llama-3-8B-Instruct) — generic response
-  - **Right:** Fine-Tuned CV Adapter — domain-specific, structured response
-- Each panel shows: response text with typing animation, latency, token count
-- Latency comparison bar chart below the panels
-- About section explaining the comparison methodology
+Side-by-side comparison of base model vs fine-tuned model responses:
 
-**Data source:** Groq API for real Llama 3 inference (with GROQ_API_KEY) or CV-themed demo responses.
+- **Prompt Input** — Large textarea with placeholder text "Type your prompt here...", character counter (0/500 limit)
+- **Category Tabs** — Three CV-themed prompt categories:
+  - *Resume* — "How do I write a strong professional resume?", "What makes a great CV summary statement?"
+  - *Career* — "How should I prepare for a technical interview?", "How do I write an effective cover letter?"
+  - *Skills* — "How should I list technical skills on my CV?", "How do I describe work experience with impact?"
+- **Parameter Controls** — Temperature slider (0.1-1.0, default 0.7) and Max Tokens slider (50-512, default 256)
+- **"Compare Models" button** (also Ctrl+Enter shortcut)
+- **Two Response Panels** side-by-side after submitting:
+  - Left: **Base Model** (NousResearch/Llama-3-8B-Instruct) — generic response with blue accent
+  - Right: **Fine-Tuned CV Adapter** (Anushka69/llama3-finetuned-cv-adapter) — domain-specific, structured response with purple accent
+  - Each panel shows: response text with typing animation, latency in ms, token count, and status badge
+- **Latency Comparison Chart** — Animated horizontal bar chart comparing response times
+- **About Fine-Tuning** section explaining the LoRA adaptation and how the fine-tuned model provides more targeted, professional responses
+
+![Inference Playground Full](screenshots/playground.png)
 
 ---
 
 ### 4. Architecture Visualizer
 
-Interactive breakdown of the QLoRA fine-tuning architecture.
+![Architecture](screenshots/architecture_hero.png)
 
-**What you see:**
-- 3-step QLoRA process with animated SVG diagrams:
-  1. **4-Bit Quantization** — NF4 compression reducing 16GB to 4GB
-  2. **LoRA Injection** — Low-rank adapter matrices (rank 16, alpha 32)
-  3. **Selective Training** — Only 0.085% parameters trained
-- Parameter distribution pie chart (trainable vs frozen)
-- GPU memory comparison bars (full fine-tuning vs QLoRA)
-- Key components grid: Quantization, LoRA Adapters, Target Modules, Training
-- Technical specifications table with all hyperparameters
+Interactive deep-dive into the QLoRA fine-tuning architecture:
 
-**Data source:** Static content based on the actual adapter configuration.
+- **QLoRA Architecture Breakdown** — 3 clickable step cards:
+  - *Step 1: Standard Transformer Block* — Shows the full 8B parameter model loaded normally, requiring 16GB GPU VRAM
+  - *Step 2: 4-Bit Quantization (NF4)* — Explains compression from 16GB to 4GB with minimal accuracy loss
+  - *Step 3: LoRA Adapters* — Shows how small trainable matrices (rank 16, alpha 32) are injected into 7 target modules
+  - Each step includes an animated SVG diagram illustrating the concept
+- **Parameter Distribution** — Pie chart showing the split between frozen parameters (99.915%) and trainable LoRA parameters (0.085%)
+- **GPU Memory Comparison** — Horizontal bar chart comparing Full Fine-Tuning (24GB, red/orange) vs QLoRA (6GB, green) — a 75% reduction
+- **Key Components** grid:
+  - *4-Bit Quantization*: NF4 data type, BFloat16 compute, double quantization enabled
+  - *LoRA Adapters*: Rank 16, alpha 32, dropout 0.05, 7 target modules
+  - *Target Modules*: All attention heads (q/k/v/o_proj) + feed-forward layers (gate/up/down_proj)
+  - *Training*: Batch size 4, gradient accumulation 4, AdamW optimizer, cosine LR schedule
+- **Tech Specs** table with base model, adapter size, quantization details, and all hyperparameters
 
----
-
-### 5. Navigation & Status Bar
-
-Present on every page:
-- Glassmorphism navbar with animated page indicator
-- 3 connection badges (HF, W&B, Inference) showing real-time service health:
-  - Green = connected and live
-  - Amber = degraded (using cache)
-  - Red = offline (using fallback)
-- Dark/light theme toggle
-- Mobile-responsive slide-out menu
+![Architecture Full](screenshots/architecture.png)
 
 ---
 
@@ -200,6 +224,7 @@ Fine-Tuning-/
 │   │   ├── store.ts               # Zustand connection store
 │   │   └── hooks/                 # React Query hooks
 │   └── .env.example
+├── screenshots/                   # Page screenshots for documentation
 ├── merge_and_push.ipynb           # Colab notebook to merge LoRA adapter
 ├── docker-compose.yml
 └── README.md
@@ -269,7 +294,7 @@ The repo includes `merge_and_push.ipynb` — a Google Colab notebook that merges
 docker-compose up
 ```
 
-Frontend: http://localhost:3000
+Frontend: http://localhost:3000  
 Backend: http://localhost:8002
 
 ---
